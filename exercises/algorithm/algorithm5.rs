@@ -1,9 +1,8 @@
 /*
-	bfs
-	This problem requires you to implement a basic BFS algorithm
+    bfs
+    This problem requires you to implement a basic BFS algorithm
 */
 
-//I AM NOT DONE
 use std::collections::VecDeque;
 
 // Define a graph
@@ -26,15 +25,31 @@ impl Graph {
     }
 
     // Perform a breadth-first search on the graph, return the order of visited nodes
-    fn bfs_with_return(&self, start: usize) -> Vec<usize> {
+    fn bfs_with_return(&self, start: usize) -> Result<Vec<usize>, &'static str> {
+        if start >= self.adj.len() {
+            return Err("起始节点超出范围");
+        }
         
-		//TODO
+        let mut queue = VecDeque::new();
+        queue.push_back(start);
+        let mut visited = vec![false; self.adj.len()];
+        visited[start] = true; 
+        
+        let mut visit_order = vec![start];
 
-        let mut visit_order = vec![];
-        visit_order
+        while let Some(current) = queue.pop_front() {
+            for &neighbor in &self.adj[current] {
+                if !visited[neighbor] {
+                    visited[neighbor] = true;
+                    queue.push_back(neighbor);
+                    visit_order.push(neighbor);
+                }
+            }
+        }
+        
+        Ok(visit_order)
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -51,7 +66,7 @@ mod tests {
         graph.add_edge(2, 3);
         graph.add_edge(3, 4);
 
-        let visited_order = graph.bfs_with_return(0);
+        let visited_order = graph.bfs_with_return(0).unwrap();
         assert_eq!(visited_order, vec![0, 1, 4, 2, 3]);
     }
 
@@ -61,7 +76,7 @@ mod tests {
         graph.add_edge(0, 1);
         graph.add_edge(1, 2);
 
-        let visited_order = graph.bfs_with_return(2);
+        let visited_order = graph.bfs_with_return(2).unwrap();
         assert_eq!(visited_order, vec![2, 1, 0]);
     }
 
@@ -72,7 +87,7 @@ mod tests {
         graph.add_edge(1, 2);
         graph.add_edge(2, 0);
 
-        let visited_order = graph.bfs_with_return(0);
+        let visited_order = graph.bfs_with_return(0).unwrap();
         assert_eq!(visited_order, vec![0, 1, 2]);
     }
 
@@ -80,8 +95,16 @@ mod tests {
     fn test_bfs_single_node() {
         let mut graph = Graph::new(1);
 
-        let visited_order = graph.bfs_with_return(0);
+        let visited_order = graph.bfs_with_return(0).unwrap();
         assert_eq!(visited_order, vec![0]);
+    }
+
+    #[test]
+    fn test_bfs_start_out_of_bounds() {
+        let graph = Graph::new(3);
+        
+        let result = graph.bfs_with_return(3);
+        assert_eq!(result, Err("起始节点超出范围"));
     }
 }
 

@@ -1,8 +1,7 @@
 /*
-	heap
-	This question requires you to implement a binary heap function
+    heap
+    This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -23,7 +22,7 @@ where
     pub fn new(comparator: fn(&T, &T) -> bool) -> Self {
         Self {
             count: 0,
-            items: vec![T::default()],
+            items: Vec::new(),
             comparator,
         }
     }
@@ -33,32 +32,65 @@ where
     }
 
     pub fn is_empty(&self) -> bool {
-        self.len() == 0
+        self.count == 0
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        self.items.push(value);
+        self.count += 1;
+        self.bubble_up(self.count - 1);
     }
 
-    fn parent_idx(&self, idx: usize) -> usize {
-        idx / 2
+    fn parent_idx(&self, idx: usize) -> Option<usize> {
+        if idx == 0 { None } else { Some((idx - 1) / 2) }
     }
 
-    fn children_present(&self, idx: usize) -> bool {
-        self.left_child_idx(idx) <= self.count
+    fn bubble_up(&mut self, idx: usize) {
+        let mut current_idx = idx;
+        while let Some(parent_idx) = self.parent_idx(current_idx) {
+            if (self.comparator)(&self.items[current_idx], &self.items[parent_idx]) {
+                self.items.swap(current_idx, parent_idx);
+                current_idx = parent_idx;
+            } else {
+                break;
+            }
+        }
     }
 
     fn left_child_idx(&self, idx: usize) -> usize {
-        idx * 2
+        2 * idx + 1
     }
 
     fn right_child_idx(&self, idx: usize) -> usize {
-        self.left_child_idx(idx) + 1
+        2 * idx + 2
     }
 
-    fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+    fn smallest_child_idx(&self, idx: usize) -> Option<usize> {
+        let left_idx = self.left_child_idx(idx);
+        let right_idx = self.right_child_idx(idx);
+        if left_idx < self.count {
+            if right_idx < self.count {
+                return if (self.comparator)(&self.items[left_idx], &self.items[right_idx]) {
+                    Some(left_idx)
+                } else {
+                    Some(right_idx)
+                };
+            }
+            return Some(left_idx);
+        }
+        None
+    }
+
+    fn bubble_down(&mut self, idx: usize) {
+        let mut current_idx = idx;
+        while let Some(smallest_child_idx) = self.smallest_child_idx(current_idx) {
+            if (self.comparator)(&self.items[smallest_child_idx], &self.items[current_idx]) {
+                self.items.swap(current_idx, smallest_child_idx);
+                current_idx = smallest_child_idx;
+            } else {
+                break;
+            }
+        }
     }
 }
 
@@ -84,8 +116,20 @@ where
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.is_empty() {
+            return None;
+        }
+
+        self.items.swap(0, self.count - 1);
+        let item = self.items.pop();
+        self.count -= 1; // 直接减少计数
+
+        // 确保堆的特性
+        if !self.is_empty() {
+            self.bubble_down(0);
+        }
+
+        item
     }
 }
 
