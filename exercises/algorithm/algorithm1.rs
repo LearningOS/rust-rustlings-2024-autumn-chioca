@@ -6,7 +6,7 @@
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
-use std::vec::*;
+// use std::vec::*;
 
 #[derive(Debug)]
 struct Node<T> {
@@ -35,7 +35,7 @@ impl<T> Default for LinkedList<T> {
     }
 }
 
-impl<T> LinkedList<T> {
+impl<T>  LinkedList<T> {
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -69,15 +69,37 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
-	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+    pub fn merge(list_a: LinkedList<T>, list_b: LinkedList<T>) -> Self
+    where
+        T: PartialOrd + Clone,  // 修改此处，添加 Clone 约束
+    {
+        let mut merged_list = LinkedList::new();
+        let mut ptr_a = list_a.start;
+        let mut ptr_b = list_b.start;
+
+        while ptr_a.is_some() || ptr_b.is_some() {
+            let val_a = ptr_a.map(|ptr| unsafe { (*ptr.as_ptr()).val.clone() });  // 使用 clone()
+            let val_b = ptr_b.map(|ptr| unsafe { (*ptr.as_ptr()).val.clone() });  // 使用 clone()
+
+            match (val_a, val_b) {
+                (Some(a), Some(b)) if a <= b => {
+                    merged_list.add(a);
+                    ptr_a = unsafe { (*ptr_a.unwrap().as_ptr()).next };
+                }
+                (Some(a), None) => {
+                    merged_list.add(a);
+                    ptr_a = unsafe { (*ptr_a.unwrap().as_ptr()).next };
+                }
+                (None, Some(b)) => {
+                    merged_list.add(b);
+                    ptr_b = unsafe { (*ptr_b.unwrap().as_ptr()).next };
+                }
+                _ => {}
+            }
         }
-	}
+
+        merged_list
+    }
 }
 
 impl<T> Display for LinkedList<T>
