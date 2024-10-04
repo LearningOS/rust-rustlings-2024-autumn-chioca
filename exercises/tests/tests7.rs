@@ -32,19 +32,14 @@
 // to pass this exercise.
 //
 // Execute `rustlings hint tests7` or use the `hint` watch subcommand for a
+// hint.
 
 
-
-
-
-fn main() {
-}
-
-
+fn main() {}
 
 #[cfg(test)]
 mod tests {
-    // use super::*;
+    use super::*;
 
     #[test]
     fn test_success() {
